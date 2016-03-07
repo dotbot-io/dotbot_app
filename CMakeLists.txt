@@ -15,8 +15,23 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(dotbot_app_node src/node.cpp)
-add_dependencies(dotbot_app_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(dotbot_app_node
-  ${catkin_LIBRARIES}
-)
+MACRO(SUBDIRLIST result curdir)
+  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  SET(dirlist "")
+  FOREACH(child ${children})
+    IF(EXISTS ${curdir}/${child}/.dotbot_ros)
+        LIST(APPEND dirlist ${child})
+    ENDIF()
+  ENDFOREACH()
+  SET(${result} ${dirlist})
+ENDMACRO()
+
+MESSAGE(STATUS "current dir     " ${CMAKE_CURRENT_SOURCE_DIR})
+SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+FOREACH(subdir ${SUBDIRS})
+  MESSAGE(STATUS "Found Executable dotbot     " ${subdir}_dotbot_app_node)
+
+  add_executable(${subdir}_dotbot_app_node ${subdir}/node.cpp)
+  add_dependencies(${subdir}_dotbot_app_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+  target_link_libraries(${subdir}_dotbot_app_node ${catkin_LIBRARIES})
+ENDFOREACH()
